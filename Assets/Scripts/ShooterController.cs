@@ -44,6 +44,7 @@ public class ShooterController : MonoBehaviour
         }
 
         //check if aim button is pressed and then change the current active camera
+        //ALSO, ALL THE AIM BEHAVIOUR GO HERE
         if (_input.aim)
         {
             _aimCamera.gameObject.SetActive(true);

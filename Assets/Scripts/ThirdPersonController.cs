@@ -145,9 +145,9 @@ namespace StarterAssets
             //dodge roll logic
             if (_input.dodge)
             {
-				if (_input.move != Vector2.zero)
-                {
-					StartCoroutine(Dodge()); //only dodge if character is moving
+				if (_input.move != Vector2.zero) //only dodge if character is moving
+				{
+					StartCoroutine(Dodge());
 				}
             }
 		}
@@ -347,6 +347,12 @@ namespace StarterAssets
 
 		private IEnumerator Dodge()
         {
+            //if currently aiming, disable aiming right before roll
+			if (_input.aim)
+            {
+				_input.aim = false;
+            }
+			
 			_input.dodge = false; //set the current dodge input state to false to avoid it triggering the animation twice on a second update
 			_isDodging = true;
 			_animator.SetTrigger("Dodge");
@@ -359,6 +365,7 @@ namespace StarterAssets
 			while(timer < _dodgeTimer)
             {
 				float speed = 5f;
+				//this DIRECTION is using transform.forward to avoid the sum of multiple vectors
 				Vector3 dir = (transform.forward * speed) + (Vector3.up * _verticalVelocity); //adding direction and gravity during roll
 				_controller.Move(dir * Time.deltaTime);
 				timer += Time.deltaTime;

@@ -79,6 +79,7 @@ namespace StarterAssets
 		private float _rotationVelocity;
 		private float _verticalVelocity;
 		private float _terminalVelocity = 53.0f;
+		private Vector3 _targetDirection; //it is already normalized inside a function, no need to normalize it anywhere.
 
 		//aiming
 		private float _sensitivity;
@@ -137,7 +138,12 @@ namespace StarterAssets
 		private void Update()
 		{
 			_hasAnimator = TryGetComponent(out _animator);
-			
+
+			//A function to constantly grab the player target direction <- I'll need this for everything tha should stop Move() and use input anyway...
+			//Maybe find a better way to do this a save some memory later!
+			TargetDir();
+
+
 			JumpAndGravity();
 			GroundedCheck();
             if(!_isDodging) Move();
@@ -345,6 +351,22 @@ namespace StarterAssets
 			return Mathf.Clamp(lfAngle, lfMin, lfMax);
 		}
 
+		private void TargetDir()
+        {
+			//the input resultant axis
+			Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
+
+			//calculate the same target rotation that would be used on Move()
+			if (_input.move != Vector2.zero)
+			{ //only if pressing a move button to save memory
+				_targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + _mainCamera.transform.eulerAngles.y;
+			}
+
+			//the target direction, self explanatory
+			Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
+			_targetDirection = targetDirection.normalized;
+		}
+
 		private IEnumerator Dodge()
         {
             //if currently aiming, disable aiming right before roll
@@ -358,18 +380,22 @@ namespace StarterAssets
 			_animator.SetTrigger("Dodge");
 			float timer = 0;
 
+			//grabbing target direction inside the function
+			Vector3 targetDir = _targetDirection;
+
 			//change collision size
 			_controller.center = new Vector3(0, 0.31f, 0);
 			_controller.height = 0.8f;
 
-			while(timer < _dodgeTimer)
+			while (timer < _dodgeTimer)
             {
 				float speed = 5f;
 				//this DIRECTION is using transform.forward to avoid the sum of multiple vectors
-				Vector3 dir = (transform.forward * speed) + (Vector3.up * _verticalVelocity); //adding direction and gravity during roll
+				Vector3 dir = (targetDir * speed) + (Vector3.up * _verticalVelocity); //adding direction and gravity during roll
 				_controller.Move(dir * Time.deltaTime);
+				
 				timer += Time.deltaTime;
-				Debug.Log(dir.magnitude);
+
 				yield return null;
             }
 			_isDodging = false;

@@ -12,6 +12,7 @@ public class ShooterController : MonoBehaviour
     [SerializeField] private float _normalSensitivity;
     [SerializeField] private float _aimSensitivity;
     [SerializeField] private LayerMask _aimColliderLayerMask = new LayerMask();
+    [SerializeField] private LayerMask _pointGunTowardsLayer = new LayerMask();
     [SerializeField] private Transform _aimTargetGM;
     [SerializeField] Rig _aimRig;
 
